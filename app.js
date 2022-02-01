@@ -4,10 +4,10 @@ const port = 80
 var path = require('path');
 
 
-app.use(express.static(__dirname + '/dist'));
+app.use(express.static(__dirname + '/public'));
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', '/test.html'));
+    res.sendFile(path.join(__dirname, 'public', '/test.html'));
 })
 
 app.listen(port, () => {
