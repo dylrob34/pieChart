@@ -92,6 +92,10 @@ function CreateTriangle(color = "(1.0,1.0,1.0,1.0)") {
                 }),
                 entryPoint: "main"
             },
+            multisample: {
+                count: 4,
+                alphaToCoverageEnabled: false
+            },
             fragment: {
                 module: device.createShaderModule({
                     code: shader.fragment
@@ -102,14 +106,28 @@ function CreateTriangle(color = "(1.0,1.0,1.0,1.0)") {
                     }]
             },
             primitive: { topology: "triangle-list" },
+            depthStencil: {
+                format: swapChainFormat
+            }
         });
         const commandEncoder = device.createCommandEncoder();
+        const myTexture = device.createTexture({
+            size: {
+                width: 640,
+                height: 640
+            },
+            sampleCount: 4,
+            format: swapChainFormat,
+            usage: GPUTextureUsage.RENDER_ATTACHMENT
+        });
+        const attachment = myTexture.createView();
         const textureView = context.getCurrentTexture().createView();
         const renderPass = commandEncoder.beginRenderPass({
             colorAttachments: [{
-                    view: textureView,
+                    view: attachment,
+                    resolveTarget: textureView,
                     loadValue: [0.5, 0.5, 0.8, 1],
-                    storeOp: "store"
+                    storeOp: "discard"
                 }]
         });
         renderPass.setPipeline(pipeline);
@@ -156,11 +174,12 @@ function createWedge(start, current, resolution) {
     let right = rotate(current, [.0, .9]);
     vertexs.push(right);
     // build small triangles
-    const halfway = [.0 - (.0 - right[0]) / 2, .9 - (.9 - right[1]) / 2];
+    //const halfway = [.0 - (.0 - right[0]) / 2, .9 - (.9 - right[1]) / 2];
+    const halfway = [right[0] / 2, .9 - (.9 - right[1]) / 2];
     // rotate by start
     let beginX = .0;
     let beginY = .9;
-    let max = current / (360 / resolution);
+    let max = current * resolution;
     for (var i = 1; i < max + 1; i++) {
         // first
         vertexs.push([beginX, beginY]);
@@ -268,6 +287,10 @@ function pieChart(categories, resolution) {
                     }],
                 entryPoint: "main"
             },
+            multisample: {
+                count: 4,
+                alphaToCoverageEnabled: false
+            },
             fragment: {
                 module: device.createShaderModule({
                     code: shader.fragment
@@ -280,10 +303,21 @@ function pieChart(categories, resolution) {
             primitive: { topology: "triangle-list" },
         });
         const commandEncoder = device.createCommandEncoder();
+        const myTexture = device.createTexture({
+            size: {
+                width: 640,
+                height: 640
+            },
+            sampleCount: 4,
+            format: swapChainFormat,
+            usage: GPUTextureUsage.RENDER_ATTACHMENT
+        });
+        const attachment = myTexture.createView();
         const textureView = context.getCurrentTexture().createView();
         const renderPass = commandEncoder.beginRenderPass({
             colorAttachments: [{
-                    view: textureView,
+                    view: attachment,
+                    resolveTarget: textureView,
                     loadValue: [0.0, 0.5, 1.0, 1],
                     storeOp: "store"
                 }]

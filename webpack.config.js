@@ -1,5 +1,5 @@
 const path = require("path");
-const bundleOutputDir = "./dist";
+const bundleOutputDir = "./build";
 
 module.exports = {
     entry: {
@@ -8,7 +8,7 @@ module.exports = {
     output: {
         filename: "[name].bundle.js",
         path: path.join(__dirname, bundleOutputDir),
-        publicPath: 'public/dist/'
+        publicPath: 'public/'
     },
     devtool: "source-map",
     resolve: {
