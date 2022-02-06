@@ -3,16 +3,16 @@ const bundleOutputDir = "./build";
 
 module.exports = {
     entry: {
-        main: "./src/main"  
+        main: "./src/PieChart.tsx"  
     },
     output: {
-        filename: "[name].bundle.js",
+        filename: "PieChart.js",
         path: path.join(__dirname, bundleOutputDir),
         publicPath: 'public/'
     },
     devtool: "source-map",
     resolve: {
-        extensions: ['.js', '.ts']
+        extensions: ['.js', '.ts', '.tsx']
     },
     module: {
         rules: [
@@ -20,7 +20,7 @@ module.exports = {
                 test: /\.js$/,
                 exclude: ['/node_modules/']
             },            
-            { test: /\.tsx?$/, loader: "ts-loader" },        
+            { test: /\.tsx?$/, loader: "ts-loader"},        
             {
                 test: /\.css$/,
                 sideEffects: true,

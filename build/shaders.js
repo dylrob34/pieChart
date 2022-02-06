@@ -1,4 +1,7 @@
-export const Shaders = () => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Shaders = void 0;
+const Shaders = () => {
     const vertex = `
         struct Inputs {
             @location(0) pos : vec4<f32>;
@@ -20,12 +23,12 @@ export const Shaders = () => {
             return out;
         }
     `;
-
     const fragment = `
         @stage(fragment)
         fn main(@location(0) vColor : vec4<f32>) -> @location(0) vec4<f32> {
             return vColor;
         }
     `;
-    return {vertex, fragment};
-}
+    return { vertex, fragment };
+};
+exports.Shaders = Shaders;

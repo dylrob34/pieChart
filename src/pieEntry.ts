@@ -1,134 +1,13 @@
-import { Shaders, Shaders1 } from "./shaders";
+import { Shaders } from "./shaders";
+import { initGPU, createBuffer } from "./gpu";
 
-const colorValues = [
-    [128, 0, 0],
-    [128, 128, 0],
-    [0, 128, 0],
-    [128, 0, 128],
-    [0, 128, 128],
-    [0, 0, 128]
-]
-
-
-function CheckWebGPU() {
-    let result = "Great, your current browser supports WebGPU!";
-    if (!navigator.gpu) {
-        result = "Your current browser does not support WebGPU";
-    }
-    return result;
+export interface Categories {
+    name: string;
+    size: number;
+    color: Array<number>;
 }
 
-let test = document.getElementById("id-gpu-check");
-
-if (test != null) {
-    test.innerHTML = CheckWebGPU();
-}
-
-async function initGPU(canvasName: string) {
-    const canvas = document.getElementById(canvasName) as HTMLCanvasElement;
-    const adapter = await navigator.gpu?.requestAdapter() as GPUAdapter;
-    const device = await adapter?.requestDevice() as GPUDevice;
-    const context = canvas.getContext("webgpu") as unknown as GPUCanvasContext;
-
-    const swapChainFormat = "bgra8unorm";
-    context.configure({
-        device: device,
-        format: swapChainFormat,
-    });
-
-    return {device, context, swapChainFormat}
-}
-
-function createBuffer(device:GPUDevice, data:Float32Array,
-    usageFlag:GPUBufferUsageFlags = GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST) {
-        const buffer = device.createBuffer({
-            size: data.byteLength,
-            usage: usageFlag,
-            mappedAtCreation: true
-        })
-        new Float32Array(buffer.getMappedRange()).set(data);
-        buffer.unmap();
-        return buffer;
-    }
-
-function createIntBuffer(device:GPUDevice, data: Int32Array,
-    usageFlag: GPUBufferUsageFlags = GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST) {
-        const buffer = device.createBuffer({
-            size: data.byteLength,
-            usage: usageFlag,
-            mappedAtCreation: true
-        })
-        new Int32Array(buffer.getMappedRange()).set(data);
-        buffer.unmap();
-        return buffer;
-    }
-
-async function CreateTriangle(color="(1.0,1.0,1.0,1.0)") {
-    console.log("Creating Triangle")
-    if (!navigator.gpu) {
-        throw("Your current browser does not support WebGPU!");
-    }
-
-    const gpu = await initGPU("canvas-webgpu");
-    const device = gpu.device;
-    const context = gpu.context;
-    const swapChainFormat = gpu.swapChainFormat as GPUTextureFormat;
-
-    const shader = Shaders(color);
-    const pipeline = device.createRenderPipeline({
-        vertex: {
-            module: device.createShaderModule({
-                code: shader.vertex
-            }),
-            entryPoint: "main"
-        },
-        multisample: {
-            count: 4,
-            alphaToCoverageEnabled: false
-        },
-        fragment: {
-            module: device.createShaderModule({
-                code: shader.fragment
-            }),
-            entryPoint: "main",
-            targets: [{
-                format: swapChainFormat
-            }]
-        },
-        primitive: {topology: "triangle-list"},
-        depthStencil: {
-            format: swapChainFormat
-        }
-        
-    });
-
-    const commandEncoder = device.createCommandEncoder();
-    const myTexture = device.createTexture({
-        size: {
-            width: 640,
-            height: 640
-        },
-        sampleCount: 4,
-        format: swapChainFormat,
-        usage: GPUTextureUsage.RENDER_ATTACHMENT
-    })
-    const attachment = myTexture.createView();
-    const textureView = context.getCurrentTexture().createView();
-    const renderPass = commandEncoder.beginRenderPass({
-        colorAttachments: [{
-            view: attachment,
-            resolveTarget: textureView,
-            loadValue: [0.5, 0.5, 0.8, 1],
-            storeOp: "discard"
-        }]
-    });
-    renderPass.setPipeline(pipeline);
-    renderPass.draw(3, 1, 0, 0);
-    renderPass.endPass();
-
-    device.queue.submit([commandEncoder.finish()]);
-
-}
+const RADIUS = 1;
 
 function toRadians(angle: number) {
     return angle * (Math.PI/180);
@@ -147,13 +26,6 @@ function rotateMatrix(angle: number, matrix: Array<Array<number>>) {
     }
     return vertexs;
 }
-
-function offsetMatrix(matrix: Array<number>) {
-    for (var i = 0; i < matrix.length; i++) {
-        matrix[i] = matrix[i] + .5;
-    }
-}
-
 function matToArray(matrix: Array<Array<number>>) {
     let arr: Array<number> = [];
     for (var i = 0; i < matrix.length; i++) {
@@ -168,24 +40,24 @@ function createWedge(start: number, current: number, resolution: number) {
     // center
     vertexs.push([.0, .0]);
     // top
-    vertexs.push([.0, .9]);
+    vertexs.push([.0, RADIUS]);
     // right
-    let right = rotate(current, [.0, .9]);
+    let right = rotate(current, [.0, RADIUS]);
     vertexs.push(right);
 
     // build small triangles
-    //const halfway = [.0 - (.0 - right[0]) / 2, .9 - (.9 - right[1]) / 2];
-    const halfway = [right[0] / 2, .9 - (.9 - right[1]) / 2];
+    //const halfway = [.0 - (.0 - right[0]) / 2, .9 - (.9 - right[RADIUS]) / 2];
+    const halfway = [right[0] / 2, RADIUS - (RADIUS - right[RADIUS]) / 2];
 
     // rotate by start
     let beginX: number = .0;
-    let beginY: number = .9;
+    let beginY: number = RADIUS;
     let max = current * resolution;
     for (var i = 1; i < max + 1; i++) {
         // first
         vertexs.push([beginX, beginY]);
         // second
-        let end = rotate(current / max * i, [0.0, 0.9]);
+        let end = rotate(current / max * i, [0.0, RADIUS]);
         vertexs.push(end);
         // center
         vertexs.push(halfway);
@@ -200,16 +72,16 @@ function createWedge(start: number, current: number, resolution: number) {
     return vertexs;
 }
 
-function getWedgeColorVertexs(start: number, size: number, resolution: number, colorIndex: number)
+function getWedgeColorVertexs(start: number, size: number, resolution: number, color: Array<number>)
 {
     let colors: Array<number> = [];
     let vertexs: Array<number> = [];
     let wedge = createWedge(start, size, resolution)
     for (var j = 0; j < wedge.length; j++){
         if (j%2 == 0) {
-            colors.push(colorValues[colorIndex][0]);
-            colors.push(colorValues[colorIndex][1]);
-            colors.push(colorValues[colorIndex][2]);
+            colors.push(color[0]);
+            colors.push(color[1]);
+            colors.push(color[2]);
         }
         vertexs.push(wedge[j]);
     }
@@ -218,26 +90,69 @@ function getWedgeColorVertexs(start: number, size: number, resolution: number, c
 
 }
 
-async function pieChart(categories: Array<number>, resolution: number) {
+function rgbToHex(color: Array<number>) {
+    let hex = "#";
+    color.forEach(c => {
+        let newHex = c.toString(16);
+        hex = hex.concat(newHex === "0" ? "00" : newHex);
+    });
+    return hex;
+}
+
+function renderText(categories: Array<Categories>, width: number, height: number, font: string) {
+    categories = categories.sort((a, b) => b.size-a.size);;
+    const canvas = document.getElementById("piecharttextcanvas") as HTMLCanvasElement;
+    const textContext = canvas.getContext("2d");
+    const elementHeight = height / (categories.length + 1);
+    console.log(font);
+    if (textContext !== null)
+    {
+        textContext.clearRect(0, 0, width, height);
+        for (let i = 0; i < categories.length; i++) {
+            textContext.beginPath();
+            textContext.rect(width / 4, (elementHeight * (i + 1)) - 10, 20, 20);
+            textContext.fillStyle = rgbToHex(categories[i].color);
+            textContext.fill()
+            textContext.closePath();
+            textContext.fillStyle = "white";
+            textContext.font = font;
+            textContext.fillText(categories[i].name, width / 4 + 30, (elementHeight * (i + 1)) + 10);
+        }
+    }
+}
+
+export async function pieChart(categories: Array<Categories>, resolution: number, defaultColor: Array<number>, MSAASamples: number, font: string) {
     console.log("Creating Triangle")
     if (!navigator.gpu) {
         throw("Your current browser does not support WebGPU!");
     }
 
-    const gpu = await initGPU("canvas-pie");
+    categories = categories.sort((a, b) => a.size-b.size);
+    let total = 0;
+    for (let i = 0; i < categories.length; i++) {
+        total += categories[i].size;;
+    }
+    if (total < 360) {
+        categories.push({
+            name: "Nothing",
+            size: 360 - total,
+            color: defaultColor
+        });
+    }
+
+    const gpu = await initGPU("piechartcanvas");
     const device = gpu.device;
     const context = gpu.context;
     const swapChainFormat = gpu.swapChainFormat as GPUTextureFormat;
 
-    categories = categories.sort((a, b) => a-b);
     let currentStart = 0;
     let vertexs = [] as Array<number>;
 
     let colors: Array<number> = [];
 
     for (var i = 0; i < categories.length; i++) {
-        if (categories[i] > 180) {
-            const categorySize = categories[i];
+        if (categories[i].size > 180) {
+            const categorySize = categories[i].size;
             const min = Math.floor(categorySize / 90);
             const remainder = categorySize % 90;
             let wedges;
@@ -251,7 +166,7 @@ async function pieChart(categories: Array<number>, resolution: number) {
                 if (j === wedges - 1) {
                     size = remainder;
                 }
-                const colorVerts = getWedgeColorVertexs(currentStart, size, resolution, i);
+                const colorVerts = getWedgeColorVertexs(currentStart, size, resolution, categories[i].color);
                 colorVerts[0].map((value) => {
                     colors.push(value);
                 })
@@ -261,7 +176,7 @@ async function pieChart(categories: Array<number>, resolution: number) {
                 currentStart += size;
             }
         } else {
-            const colorVerts = getWedgeColorVertexs(currentStart, categories[i], resolution, i);
+            const colorVerts = getWedgeColorVertexs(currentStart, categories[i].size, resolution, categories[i].color);
             colorVerts[0].map((value) => {
                 colors.push(value);
             })
@@ -270,7 +185,7 @@ async function pieChart(categories: Array<number>, resolution: number) {
             })
 
         }
-        currentStart += categories[i];
+        currentStart += categories[i].size;
     }
 
     const vertexBuffer = createBuffer(device, Float32Array.from(vertexs));
@@ -278,7 +193,7 @@ async function pieChart(categories: Array<number>, resolution: number) {
 
     
 
-    const shader = Shaders1();
+    const shader = Shaders();
     const pipeline = device.createRenderPipeline({
         vertex: {
             module: device.createShaderModule({
@@ -302,7 +217,7 @@ async function pieChart(categories: Array<number>, resolution: number) {
             entryPoint: "main"
         },
         multisample: {
-            count: 4,
+            count: MSAASamples,
             alphaToCoverageEnabled: false
         },
         fragment: {
@@ -321,23 +236,31 @@ async function pieChart(categories: Array<number>, resolution: number) {
     const commandEncoder = device.createCommandEncoder();
     const myTexture = device.createTexture({
         size: {
-            width: 640,
-            height: 640
+            width: gpu.width,
+            height: gpu.height
         },
-        sampleCount: 4,
+        sampleCount: MSAASamples,
         format: swapChainFormat,
-        usage: GPUTextureUsage.RENDER_ATTACHMENT
+        usage: 16 // GPUTextureUsage.RENDER_ATTACHMENT // 16
     })
     const attachment = myTexture.createView();
     const textureView = context.getCurrentTexture().createView();
-    const renderPass = commandEncoder.beginRenderPass({
-        colorAttachments: [{
+    let colorAttachments = [] as Array<GPURenderPassColorAttachment>;
+    if (MSAASamples === 1) {
+        colorAttachments.push({
+            view: textureView,
+            loadValue: [0, 0, 0, 0],
+            storeOp: "store"
+        })
+    } else {
+        colorAttachments.push({
             view: attachment,
             resolveTarget: textureView,
-            loadValue: [0.0, 0.5, 1.0, 1],
+            loadValue: [0, 0, 0, 0],
             storeOp: "store"
-        }]
-    });
+        })
+    }
+    const renderPass = commandEncoder.beginRenderPass({colorAttachments});
 
     
     renderPass.setPipeline(pipeline);
@@ -346,25 +269,10 @@ async function pieChart(categories: Array<number>, resolution: number) {
     renderPass.draw(vertexs.length / 2);
     renderPass.endPass();
     device.queue.submit([commandEncoder.finish()]);
+
+    renderText(categories, gpu.width / 4, gpu.height, font);
 }
-
-//document.onload = function() {
-    let button = document.getElementById("b");
-    if (button != null) {
-        console.log("setting button on click")
-        button.onclick = () => {
-            const input = document.getElementById("id-color") as HTMLInputElement;
-            const color = input.value;
-            console.log(`InnerText: ${color}`)
-            if (color != null) {
-                CreateTriangle(color);
-            }
-        }
-    } else {
-        console.log("Fuck the button");
-    }
-
-    
+/*
     let pieButton = document.getElementById("pie");
     if (pieButton != null) {
         pieButton.onclick = () => {
@@ -392,4 +300,5 @@ async function pieChart(categories: Array<number>, resolution: number) {
     } else {
         console.log("Fuck the button");
     }
+    */
 //}
