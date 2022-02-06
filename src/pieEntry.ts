@@ -102,9 +102,11 @@ function rgbToHex(color: Array<number>) {
 function renderText(categories: Array<Categories>, width: number, height: number, font: string) {
     categories = categories.sort((a, b) => b.size-a.size);;
     const canvas = document.getElementById("piecharttextcanvas") as HTMLCanvasElement;
+    if (canvas === null) {
+        return;
+    }
     const textContext = canvas.getContext("2d");
     const elementHeight = height / (categories.length + 1);
-    console.log(font);
     if (textContext !== null)
     {
         textContext.clearRect(0, 0, width, height);
@@ -122,7 +124,6 @@ function renderText(categories: Array<Categories>, width: number, height: number
 }
 
 export async function pieChart(categories: Array<Categories>, resolution: number, defaultColor: Array<number>, MSAASamples: number, font: string) {
-    console.log("Creating Triangle")
     if (!navigator.gpu) {
         throw("Your current browser does not support WebGPU!");
     }

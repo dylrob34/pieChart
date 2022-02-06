@@ -6,8 +6,6 @@ async function initGPU(canvasName: string) {
     const context = canvas.getContext("webgpu") as unknown as GPUCanvasContext;
     const width = canvas.width;
     const height = canvas.height;
-    console.log(width);
-    console.log(height);
 
     const swapChainFormat = "bgra8unorm";
     context.configure({
