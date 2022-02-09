@@ -1,5 +1,5 @@
 import { Shaders } from "./shaders";
-import { initGPU, createBuffer } from "./gpu";
+import { initGPU, createBuffer, createUIntBuffer } from "./gpu";
 
 export interface Categories {
     name: string;
@@ -74,19 +74,15 @@ function createWedge(start: number, current: number, resolution: number) {
 
 function getWedgeColorVertexs(start: number, size: number, resolution: number, color: Array<number>)
 {
-    let colors: Array<number> = [];
-    let vertexs: Array<number> = [];
     let wedge = createWedge(start, size, resolution)
-    for (var j = 0; j < wedge.length; j++){
-        if (j%2 == 0) {
-            colors.push(color[0]);
-            colors.push(color[1]);
-            colors.push(color[2]);
-        }
-        vertexs.push(wedge[j]);
+    let colors = new Uint8Array(wedge.length * 3 / 2);
+    for (var i = 0; i < colors.length; i+=3) {
+        colors[i] = color[0];
+        colors[i + 1] = color[1];
+        colors[i + 2] = color[2];
     }
 
-    return [colors, vertexs]
+    return [colors, wedge]
 
 }
 
@@ -118,7 +114,7 @@ function renderText(categories: Array<Categories>, width: number, height: number
             textContext.closePath();
             textContext.fillStyle = "white";
             textContext.font = font;
-            textContext.fillText(categories[i].name, width / 4 + 30, (elementHeight * (i + 1)) + 10);
+            textContext.fillText(categories[i].name + " " + categories[i].size + "%", width / 4 + 30, (elementHeight * (i + 1)) + 10);
         }
     }
 }
@@ -154,8 +150,8 @@ export async function pieChart(categories: Array<Categories>, resolution: number
     for (var i = 0; i < categories.length; i++) {
         if (categories[i].size > 180) {
             const categorySize = categories[i].size;
-            const min = Math.floor(categorySize / 90);
-            const remainder = categorySize % 90;
+            const min = Math.floor(categorySize / 180);
+            const remainder = categorySize % 180;
             let wedges;
             if (remainder === 0) {
                 wedges = min;
@@ -163,34 +159,33 @@ export async function pieChart(categories: Array<Categories>, resolution: number
                 wedges = min + 1;
             }
             for (let j = 0; j < wedges; j++) {
-                let size = 90;
+                let size = 180;
                 if (j === wedges - 1) {
                     size = remainder;
                 }
                 const colorVerts = getWedgeColorVertexs(currentStart, size, resolution, categories[i].color);
-                colorVerts[0].map((value) => {
-                    colors.push(value);
-                })
-                colorVerts[1].map((value) => {
-                    vertexs.push(value);
-                })
+                for (const c of colorVerts[0]){
+                    colors.push(c);
+                }
+                for (const v of colorVerts[1]) {
+                    vertexs.push(v);
+                }
                 currentStart += size;
             }
         } else {
             const colorVerts = getWedgeColorVertexs(currentStart, categories[i].size, resolution, categories[i].color);
-            colorVerts[0].map((value) => {
-                colors.push(value);
-            })
-            colorVerts[1].map((value) => {
-                vertexs.push(value);
-            })
+            for (const c of colorVerts[0]) {
+                colors.push(c);
+            }
+            for (const v of colorVerts[1]) {
+                vertexs.push(v);
+            }
 
         }
         currentStart += categories[i].size;
     }
-
     const vertexBuffer = createBuffer(device, Float32Array.from(vertexs));
-    const colorBuffer = createBuffer(device, Float32Array.from(colors));
+    const colorBuffer = createBuffer(device, Float32Array.from(colors).map((e) => {return e / 255}));
 
     
 

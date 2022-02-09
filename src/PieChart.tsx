@@ -19,7 +19,7 @@ export const PieChart = (props: PieProps) =>
     
     return (
         <div style={{display: "flex"}}>
-            <canvas id="piecharttextcanvas" width={props.width / 4} height={props.height}/>
+            <canvas id="piecharttextcanvas" width={props.width * .4} height={props.height}/>
             <canvas id="piechartcanvas" width={props.width} height={props.height}/>
         </div>
     )

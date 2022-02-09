@@ -28,14 +28,14 @@ function createBuffer(device:GPUDevice, data:Float32Array,
         return buffer;
 }
 
-function createIntBuffer(device:GPUDevice, data: Int32Array,
+function createUIntBuffer(device:GPUDevice, data: Uint32Array,
     usageFlag: GPUBufferUsageFlags = 32 | 8) { // 32 GPUBufferUsage.VERTEX || 8 GPUBufferUsage.COPY_DST
         const buffer = device.createBuffer({
             size: data.byteLength,
             usage: usageFlag,
             mappedAtCreation: true
         })
-        new Int32Array(buffer.getMappedRange()).set(data);
+        new Uint32Array(buffer.getMappedRange()).set(data);
         buffer.unmap();
         return buffer;
 }
@@ -48,4 +48,4 @@ function CheckWebGPU() {
     return result;
 }
 
-export { initGPU, createBuffer, createIntBuffer, CheckWebGPU }
+export { initGPU, createBuffer, createUIntBuffer, CheckWebGPU }
