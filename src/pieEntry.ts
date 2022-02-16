@@ -90,7 +90,7 @@ function rgbToHex(color: Array<number>) {
     let hex = "#";
     color.forEach(c => {
         let newHex = c.toString(16);
-        hex = hex.concat(newHex === "0" ? "00" : newHex);
+        hex = hex.concat(newHex.length === 1 ? "0" + newHex : newHex);
     });
     return hex;
 }
@@ -105,7 +105,7 @@ function renderText(categories: Array<Categories>, width: number, height: number
     const elementHeight = height / (categories.length + 1);
     if (textContext !== null)
     {
-        textContext.clearRect(0, 0, width, height);
+        textContext.clearRect(0, 0, canvas.width, canvas.height);
         for (let i = 0; i < categories.length; i++) {
             textContext.beginPath();
             textContext.rect(width / 4, (elementHeight * (i + 1)) - 10, 20, 20);
@@ -114,7 +114,7 @@ function renderText(categories: Array<Categories>, width: number, height: number
             textContext.closePath();
             textContext.fillStyle = "white";
             textContext.font = font;
-            textContext.fillText(categories[i].name + " " + categories[i].size + "%", width / 4 + 30, (elementHeight * (i + 1)) + 10);
+            textContext.fillText(categories[i].name + " " + Math.floor(categories[i].size/360*100) + "%", width / 4 + 30, (elementHeight * (i + 1)) + 10);
         }
     }
 }
