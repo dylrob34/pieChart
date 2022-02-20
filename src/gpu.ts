@@ -1,4 +1,3 @@
-
 async function initGPU(canvasName: string) {
     const canvas = document.getElementById(canvasName) as HTMLCanvasElement;
     const adapter = await navigator.gpu.requestAdapter() as GPUAdapter;

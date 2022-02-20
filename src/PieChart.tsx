@@ -1,6 +1,5 @@
 import React from "react";
 import { pieChart, Categories } from "./pieEntry";
-
 interface PieProps {
     categories: Array<Categories>;
     resolution: number;

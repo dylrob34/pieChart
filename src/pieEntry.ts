@@ -1,6 +1,5 @@
 import { Shaders } from "./shaders";
 import { initGPU, createBuffer, createUIntBuffer } from "./gpu";
-
 export interface Categories {
     name: string;
     size: number;
@@ -114,7 +113,7 @@ function renderText(categories: Array<Categories>, width: number, height: number
             textContext.closePath();
             textContext.fillStyle = "white";
             textContext.font = font;
-            textContext.fillText(categories[i].name + " " + Math.floor(categories[i].size/360*100) + "%", width / 4 + 30, (elementHeight * (i + 1)) + 10);
+            textContext.fillText(categories[i].name + " " + Math.round(categories[i].size/360*100) + "%", width / 4 + 30, (elementHeight * (i + 1)) + 10);
         }
     }
 }
