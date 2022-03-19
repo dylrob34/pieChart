@@ -23,7 +23,7 @@ export const PieChart = (props: PieProps) =>
             setWidth(rect.right - rect.left);
         }
         
-        pieChart(props.categories, props.resolution || 1, props.defaultColor || [134, 200, 178], props.MSAASamples || 4, props.font || "25px Arial");
+        pieChart(props.categories, props.resolution || 1, props.defaultColor || [0, 0, 0], props.MSAASamples || 4, props.font || "25px Arial");
 
     }, [props.categories, props.resolution, props.defaultColor, props.MSAASamples, props.width, props.height, props.font])
     
