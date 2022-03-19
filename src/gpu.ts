@@ -10,6 +10,7 @@ async function initGPU(canvasName: string) {
     context.configure({
         device: device,
         format: swapChainFormat,
+        compositingAlphaMode: "premultiplied",
     });
 
     return {canvas, width, height, device, context, swapChainFormat}

@@ -22,21 +22,18 @@ export const PieChart = (props: PieProps) =>
             setHeight(rect.bottom - rect.top);
             setWidth(rect.right - rect.left);
         }
-        if (navigator.gpu) {
-            pieChart(props.categories, props.resolution || 1, props.defaultColor || [0, 0, 0], props.MSAASamples || 4, props.font || "25px Arial");
-        }
+        
+        pieChart(props.categories, props.resolution || 1, props.defaultColor || [134, 200, 178], props.MSAASamples || 4, props.font || "25px Arial");
+
     }, [props.categories, props.resolution, props.defaultColor, props.MSAASamples, props.width, props.height, props.font])
     
     return (
         <div ref={parent} style={{height: "100%"}}>
             {
-                navigator.gpu ?
                 <div style={{display: "flex", height: "100%"}}>
-                    <canvas id="piecharttextcanvas" width={width * .4} height={height} style={{"min-width": 0}}/>
-                    <canvas id="piechartcanvas" width={width * .6} height={height} style={{"min-width": 0}}/>
+                    <canvas id="piecharttextcanvas" width={width * .4} height={height} style={{"minWidth": 0}}/>
+                    <canvas id="piechartcanvas" width={width * .6} height={height} style={{"minWidth": 0}}/>
                 </div>
-                :
-                "Your browser does not support this new feature. Please update your new browser, or switch to a modern one."
             }
         </div>
     )

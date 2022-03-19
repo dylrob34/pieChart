@@ -20,16 +20,14 @@ export const Shaders = () => {
             return out;
         }
     `;
-
     const fragment = `
         @stage(fragment)
         fn main(@location(0) vColor : vec4<f32>) -> @location(0) vec4<f32> {
             return vColor;
         }
     `;
-    return {vertex, fragment};
-}
-
+    return { vertex, fragment };
+};
 export const ShadersGL = () => {
     const vertex = `#version 300 es
         in vec2 coordinates;
@@ -40,7 +38,6 @@ export const ShadersGL = () => {
             color = vec4(colors, 1.0);
         }
     `;
-
     const fragment = `#version 300 es
         precision highp float;
         in vec4 color;
@@ -49,5 +46,5 @@ export const ShadersGL = () => {
             outColor = color;
         }
     `;
-    return {vertex, fragment};
-}
+    return { vertex, fragment };
+};
