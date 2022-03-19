@@ -1,3 +1,4 @@
+
 import { Shaders, ShadersGL } from "./shaders";
 import { initGPU, createBuffer } from "./gpu";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -138,7 +139,7 @@ function renderGL(vertices, colors, MSAASamples) {
     const cptr = context.getAttribLocation(program, "colors");
     context.vertexAttribPointer(cptr, 3, context.FLOAT, false, 0, 0);
     context.enableVertexAttribArray(cptr);
-    context.clearColor(1.0, 1.0, 1.0, 1.0);
+    context.clearColor(0, 0, 0, 0);
     context.enable(context.DEPTH_TEST);
     context.clear(context.COLOR_BUFFER_BIT);
     context.viewport(0, 0, canvas.width, canvas.height);
