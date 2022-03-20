@@ -1,5 +1,8 @@
 async function initGPU(canvasName: string) {
-    const canvas = document.getElementById(canvasName) as HTMLCanvasElement;
+    const c = document.getElementById(canvasName) as HTMLCanvasElement;
+    const canvas = document.createElement("canvas");
+    canvas.width = c.width;
+    canvas.height = c.height;
     const adapter = await navigator.gpu.requestAdapter() as GPUAdapter;
     const device = await adapter.requestDevice() as GPUDevice;
     const context = canvas.getContext("webgpu") as unknown as GPUCanvasContext;

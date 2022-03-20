@@ -11,6 +11,7 @@
   "author": "dylrob34",
   "license": "ISC",
   "dependencies": {
+    "@types/offscreencanvas": "^2019.6.4",
     "@types/react": "^17.0.40",
     "@webgpu/types": "^0.1.13",
     "express": "^4.17.3",

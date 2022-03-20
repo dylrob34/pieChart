@@ -119,7 +119,11 @@ function renderText(categories: Array<Categories>, width: number, height: number
 }
 
 function renderGL(vertices: Array<number>, colors: Array<number>, MSAASamples: number) {
-    const canvas = document.getElementById("piechartcanvas") as HTMLCanvasElement;
+    const c = document.getElementById("piechartcanvas") as HTMLCanvasElement;
+    // @ts-ignore
+    const canvas = document.createElement("canvas");
+    canvas.width = c.width;
+    canvas.height = c.height;
     const context = canvas.getContext("webgl2");
 
     const vertexBuffer = context.createBuffer();
@@ -167,10 +171,15 @@ function renderGL(vertices: Array<number>, colors: Array<number>, MSAASamples: n
     context.viewport(0, 0, canvas.width, canvas.height);
 
     context.drawArrays(context.TRIANGLES, 0, vertices.length / 2);
+
+    const ctx = c.getContext("2d");
+    ctx.drawImage(canvas, 0, 0);
+
     return [canvas.width, canvas.height];
 }
 
 const render = async (vertexs: Array<number>, colors: Array<number>, MSAASamples: number) => {
+    const c = document.getElementById("piechartcanvas") as HTMLCanvasElement;
     const gpu = await initGPU("piechartcanvas");
     const device = gpu.device;
     const context = gpu.context;
@@ -254,6 +263,9 @@ const render = async (vertexs: Array<number>, colors: Array<number>, MSAASamples
     renderPass.draw(vertexs.length / 2);
     renderPass.end();
     device.queue.submit([commandEncoder.finish()]);
+
+    const ctx = c.getContext("2d");
+    ctx.drawImage(gpu.canvas, 0, 0);
 
     return [gpu.width, gpu.height];
 

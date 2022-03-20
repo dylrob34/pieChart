@@ -22,10 +22,13 @@ export const PieChart = (props: PieProps) =>
             setHeight(rect.bottom - rect.top);
             setWidth(rect.right - rect.left);
         }
-        
-        pieChart(props.categories, props.resolution || 1, props.defaultColor || [0, 0, 0], props.MSAASamples || 4, props.font || "25px Arial");
-
     }, [props.categories, props.resolution, props.defaultColor, props.MSAASamples, props.width, props.height, props.font])
+
+    React.useEffect(() => {
+        if (width !== 0 && height !== 0) {
+            pieChart(props.categories, props.resolution || 1, props.defaultColor || [0, 0, 0], props.MSAASamples || 4, props.font || "25px Arial");
+        }
+    })
     
     return (
         <div ref={parent} style={{height: "100%"}}>
